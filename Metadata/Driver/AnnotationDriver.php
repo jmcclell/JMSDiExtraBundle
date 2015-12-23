@@ -116,12 +116,16 @@ class AnnotationDriver implements DriverInterface
                 // try to extract it from the class itself
                 if (null === $alias) {
                     $instance = unserialize(sprintf('O:%d:"%s":0:{}', strlen($className), $className));
-                    $alias = $instance->getName();
+                    if (method_exists($instance, 'getName')) {
+                        $alias = $instance->getName();
+                    }
                 }
 
-                $metadata->tags['form.type'][] = array(
-                    'alias' => $alias,
-                );
+                $config = array();
+                if (null !== $alias) {
+                    $config['alias'] = $alias;
+                }
+                $metadata->tags['form.type'][] = $config;
             } else if ($annot instanceof MetadataProcessorInterface) {
                 if (null === $metadata->id) {
                     $metadata->id = $this->namingStrategy->classToServiceName($className);
